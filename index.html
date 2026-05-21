@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="description"
+        content="Contrastive Distribution Matching (CDM): amortizing Twisted Sequential Monte Carlo inference in discrete diffusion via a learned twist function.">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CDM: Contrastive Distribution Matching for Amortized SMC in Discrete Diffusion</title>
+
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro"
+        rel="stylesheet">
+
+  <link rel="stylesheet" href="./static/css/bulma.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-carousel.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-slider.min.css">
+  <link rel="stylesheet" href="./static/css/fontawesome.all.min.css">
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="./static/css/index.css">
+  <link rel="icon" href="data:,">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script defer src="./static/js/fontawesome.all.min.js"></script>
+  <script src="./static/js/bulma-carousel.min.js"></script>
+  <script src="./static/js/bulma-slider.min.js"></script>
+  <script src="./static/js/index.js"></script>
+
+  <script>
+    window.MathJax = {
+      tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']] },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async
+          src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+  <style>
+    /* Tighten vertical padding above/below every <section class="section"> */
+    .section { padding: 1.5rem 1.5rem; }
+  </style>
+</head>
+<body>
+
+<nav class="navbar" role="navigation" aria-label="main navigation">
+  <div class="navbar-brand">
+    <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+    </a>
+  </div>
+  <div class="navbar-menu">
+    <div class="navbar-start" style="flex-grow: 1; justify-content: center;">
+      <a class="navbar-item" href="#">
+        <span class="icon">
+          <i class="fas fa-home"></i>
+        </span>
+      </a>
+      <a class="navbar-item" href="#abstract">Abstract</a>
+      <a class="navbar-item" href="#method">Method</a>
+      <a class="navbar-item" href="#results">Experiment Results</a>
+      <a class="navbar-item" href="#BibTeX">BibTeX</a>
+    </div>
+  </div>
+</nav>
+
+
+<section class="hero">
+  <div class="hero-body">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column has-text-centered">
+          <h1 class="title is-1 publication-title">Contrastive Distribution Matching for Amortized Sequential Monte Carlo in Discrete Diffusion</h1>
+          <div class="is-size-5 publication-authors">
+            <span class="author-block">
+              <a href="https://jh27kim.github.io/"><b>Jaihoon Kim</b></a><sup>1</sup>,&nbsp;&nbsp;&nbsp;&nbsp;
+            </span>
+            <span class="author-block">
+              <a href="https://github.com/taehoon-yoon"><b>Taehoon Yoon</b></a><sup>2</sup>,&nbsp;&nbsp;&nbsp;&nbsp;
+            </span>
+            <span class="author-block">
+              <a href="https://prinphunya.github.io/"><b>Prin Phunyaphibarn</b></a><sup>1</sup>
+            </span>
+            <br/>
+            <span class="author-block">
+              <a href="https://ksj626.github.io/"><b>Seungjun Kim</b></a><sup>1</sup>,&nbsp;&nbsp;&nbsp;&nbsp;
+            </span>
+            <span class="author-block">
+              <a href="https://mortezamardani.github.io/morteza/"><b>Morteza Mardani</b></a><sup>3</sup>,&nbsp;&nbsp;&nbsp;&nbsp;
+            </span>
+            <span class="author-block">
+              <a href="https://mhsung.github.io/"><b>Minhyuk Sung</b></a><sup>1</sup>
+            </span>
+          </div>
+
+          <div class="is-size-5 publication-authors" style="margin-top: 0.5em;">
+            <span class="author-block"><sup>1</sup>KAIST</span>&nbsp;&nbsp;&nbsp;
+            <span class="author-block"><sup>2</sup>University of Michigan</span>&nbsp;&nbsp;&nbsp;
+            <span class="author-block"><sup>3</sup>NVIDIA</span>
+          </div>
+
+          <div class="column has-text-centered">
+            <div class="publication-links">
+              <span class="link-block">
+                <a href="#"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="fas fa-file-pdf"></i>
+                  </span>
+                  <span>Paper</span>
+                </a>
+              </span>
+              <span class="link-block">
+                <a href="#"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="ai ai-arxiv"></i>
+                  </span>
+                  <span>arXiv</span>
+                </a>
+              </span>
+              <span class="link-block">
+                <a href="#"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="fab fa-github"></i>
+                  </span>
+                  <span>Code (Coming Soon)</span>
+                </a>
+              </span>
+              <span class="link-block">
+                <a href="#BibTeX"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="fas fa-quote-left"></i>
+                  </span>
+                  <span>BibTeX</span>
+                </a>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<section class="hero teaser">
+  <div class="container is-max-desktop">
+    <div class="hero-body">
+      <img src="./static/images/figure_concept.png" alt="CDM concept figure"/>
+      <h2 class="subtitle has-text-centered">
+        <span class="dnerf">CDM</span> learns a parameterized twist function via a contrastive objective,
+        reducing per-step twist evaluation in twisted SMC to a <i>constant-time</i> operation in discrete diffusion.
+      </h2>
+    </div>
+  </div>
+</section>
+
+
+<section class="section" id="abstract">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3">Abstract</h2>
+        <div class="content has-text-justified">
+          <p>
+            Discrete diffusion models have emerged as powerful frameworks for generating structured
+            categorical data. However, efficiently sampling from reward-tilted distributions remains
+            a fundamental challenge. While Twisted Sequential Monte Carlo (SMC) offers asymptotic
+            exactness for this task, estimating the optimal twist function in discrete state spaces
+            necessitates costly Monte Carlo approximations, resulting in a severe computational
+            bottleneck at inference.
+          </p>
+          <p>
+            To overcome this limitation, we introduce <b>Contrastive Distribution Matching (CDM)</b>,
+            a novel framework that amortizes the cost of SMC inference by learning a parameterized
+            twist function via positive and negative samples. For efficient training, we reformulate
+            the gradient estimator to leverage the closed-form forward kernels of discrete diffusion
+            models. In practice, evaluating our learned twist function incurs less than <b>5%</b>
+            additional computational overhead compared to compared to a single forward pass of the base model. 
+          </p>
+          <p>
+            Through extensive empirical evaluations, we demonstrate that CDM consistently outperforms
+            existing baselines under matched wall-clock time. We validate the effectiveness and
+            versatility of our approach across a diverse range of applications, including
+            <b>toxic text generation</b>, <b>regulatory DNA sequence design</b>, <b>protein
+            designability</b>, and <b>diffusion large language model alignment</b>.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<section class="section" id="motivation">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3">Motivation: The Twist Bottleneck</h2>
+        <div class="content has-text-justified">
+          <p>
+            Reward-aligned sampling in diffusion models corresponds to drawing from a tilted target
+            <i>p<sub>t</sub><sup>*</sup>(x<sub>t</sub>) &propto; p<sub>t</sub><sup>base</sup>(x<sub>t</sub>) &psi;<sub>t</sub><sup>*</sup>(x<sub>t</sub>)</i>,
+            where the optimal twist <i>&psi;<sub>t</sub><sup>*</sup></i> is the exponentiated value function.
+            In <i>continuous</i> diffusion, Tweedie's formula provides a closed-form estimate of the clean
+            sample, yielding a cheap plug-in twist.
+          </p>
+          <p>
+            In <i>discrete</i> diffusion this shortcut does not exist. Existing twisted SMC
+            works relies on Monte Carlo estimate, requiring multiple reward queries for each particle and diffusion step. 
+            This becomes prohibitive when the reward is expensive (e.g., protein-designability scoring).
+            Our goal is to amortize this cost by learning a value function, enabling constant-time evaluation during inference. 
+          </p>
+        </div>
+        <div class="has-text-centered">
+          <img src="./static/images/figure_motivation.jpg"
+               alt="Motivation: cost of Monte Carlo twist estimation"
+               style="width: 100%; max-width: 600px;"/>
+          <p class="is-size-6" style="margin-top: 0.5em; max-width: 600px; margin-left: auto; margin-right: auto;">
+            Increasing the number of Monte Carlo sample $M$ yields a more accurate twist estimate and better SMC performance,
+            but inference cost grows proportionally. <b>CDM (Ours)</b> amortizes this cost and shows superior scalability.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<section class="section" id="method">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-full-width">
+        <h2 class="title is-3">Method</h2>
+
+        <h3 class="title is-4 has-text-left">Contrastive Distribution Matching</h3>
+        <div class="content has-text-justified">
+          <p>
+            CDM learns the parameterized twist function $\psi_t^\phi$ by aligning the
+            twisted base distribution $p_t^\phi(\mathbf{x}_t) \propto p_t^{\text{base}}(\mathbf{x}_t)\,\psi_t^\phi(\mathbf{x}_t)$
+            with the optimal reward-tilted target $p_t^*$ under a time-averaged forward KL:
+          </p>
+          <p style="text-align: center;">
+            $\displaystyle \mathcal{L}_{\text{CDM}}(\phi) = \mathbb{E}_{t}\!\left[\, \mathcal{D}_{\text{KL}}\!\left( p_t^*(\mathbf{x}_t) \,\big\|\, p_t^\phi(\mathbf{x}_t) \right) \right].$
+          </p>
+          <p>
+            Its gradient has a <b>contrastive</b> form &mdash; a <b>positive</b> term that raises
+            $\log\psi_t^\phi$ on samples drawn from the target, and a <b>negative</b> term that
+            lowers it on samples drawn from the current twisted model:
+          </p>
+          <p style="text-align: center;">
+            $\displaystyle -\nabla_\phi \mathcal{L}_{\text{CDM}}(\phi) \;=\; \mathbb{E}_{t}\!\bigg[\, \underbrace{\mathbb{E}_{p_t^*(\mathbf{x}_t)}\!\big[\nabla_\phi \log \psi_t^\phi(\mathbf{x}_t)\big]}_{\text{positive}} \;-\; \underbrace{\mathbb{E}_{p_t^\phi(\mathbf{x}_t)}\!\big[\nabla_\phi \log \psi_t^\phi(\mathbf{x}_t)\big]}_{\text{negative}} \bigg].$
+          </p>
+          <p>
+            Empirically, we found that incorporating negative gradients improves training convergence. 
+            However, estimating this gradient requires drawing positive samples, a process that necessitates costly reward evaluations. 
+            For additional efficiency, we leverage the closed-form forward kernel of discrete diffusion models to reuse clean positive samples across multiple timesteps. 
+          </p>
+        </div>
+
+        <h3 class="title is-4 has-text-left">Forward-Based Gradient Estimation</h3>
+        <div class="content has-text-justified">
+          <p>
+            A naive evaluation of the contrastive gradient allows only a <b>single</b> gradient update
+            per (expensive) positive sample. We exploit a property unique to diffusion: the
+            intermediate target decomposes through the closed-form forward kernel as
+            $p_t^*(\mathbf{x}_t)=\sum_{\mathbf{x}_0}p_0^*(\mathbf{x}_0)\,p^{\mathrm{base}}(\mathbf{x}_t\mid \mathbf{x}_0)$.
+            This yields the equivalent unbiased estimator that we actually train with:
+          </p>
+          <p style="text-align: center;">
+            $\displaystyle -\nabla_\phi \mathcal{L}_{\text{CDM}}(\phi) \;=\; \mathbb{E}_{t}\!\left[\, \mathbb{E}_{p_0^*(\mathbf{x}_0)}\, \mathbb{E}_{p^{\mathrm{base}}(\mathbf{x}_t\mid \mathbf{x}_0)}\!\big[\nabla_\phi \log \psi_t^\phi(\mathbf{x}_t)\big] \;-\; \mathbb{E}_{p_t^\phi(\mathbf{x}_t)}\!\big[\nabla_\phi \log \psi_t^\phi(\mathbf{x}_t)\big] \right].$
+          </p>
+          <p>
+            In practice, CDM maintains a buffer $\mathcal{B}$ of <i>clean</i> positives obtained from
+            the approximated target $p_0^*$ and re-noises them across timesteps for many gradient
+            updates per reward query. This <b>decouples</b> reward-evaluation cost from the number of
+            training updates which is a structural property unavailable to autoregressive settings [1]. 
+          </p>
+        </div>
+
+        <h3 class="title is-4 has-text-left">Efficient Twist Parameterization</h3>
+        <div class="content has-text-justified">
+          <p>
+            Additionally, an efficient parameterization of the twist function is crucial for scalable inference. 
+            We attach $\psi_t^\phi$ as a lightweight <i>scalar head</i> on top of the final feature layer of
+            the pretrained denoiser. Once the backbone features
+            are computed, both the denoising logits and the twist estimate are produced in a single
+            forward pass, adding around <b>5%</b> overhead (as little as <b>0.5%</b>) over base-model
+            forward pass. 
+          </p>
+        </div>
+
+        <div class="columns is-centered">
+          <div class="column is-full has-text-centered">
+            <img src="./static/images/twist_architectures.png" alt="Twist head architecture"
+                 style="width: 100%; max-width: 700px;"/>
+            <p class="is-size-6 has-text-centered" style="margin-top: 0.5em; max-width: 700px; margin-left: auto; margin-right: auto;">
+              The twist function is parameterized as a lightweight scalar head on top of the
+              pretrained denoiser, adding less than <b>5%</b> overhead at inference (left).
+              Three architectural choices for the twist head: (a) MLP, (b) MLP+PE, and (c) Transformer (right).
+            </p>
+          </div>
+        </div>
+
+        <h3 class="title is-4 has-text-left">Proposal-Agnostic Inference</h3>
+        <div class="content has-text-justified">
+          <p>
+            Since CDM learns the twist function directly, it is also <b>orthogonal</b> to the
+            choice of proposal distribution. It can be plugged into SMC over the base model, over
+            a reward-fine-tuned proposal (e.g., DRAKES [2], GRPO-style fine-tuning, d1 [3]), 
+            composing additively for further gains while preserving the diversity of the base distribution.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<section class="section" id="results">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-full-width">
+        <h2 class="title is-3">Experiment Results</h2>
+
+        <h3 class="title is-4 has-text-left">Main Scaling Experiments</h3>
+        <div class="content has-text-justified">
+          <p>
+            We benchmark CDM across four reward-alignment tasks: <b>toxic text generation</b>,
+            <b>regulatory DNA design</b>, <b>protein designability</b>, and <b>diffusion LLM alignment</b>.
+            For each task we plot reward versus matched wall-clock time and report a heldout reward
+            that is not observed during scaling.
+          </p>
+        </div>
+        <img src="./static/images/figure_main.jpg" alt="Main scaling results"
+             style="max-width: 100%;"/>
+        <p class="is-size-6 has-text-centered" style="margin-top: 0.5em;">
+          CDM achieves the best scaling behavior across both given and heldout rewards in all
+          four applications.
+        </p>
+
+        <br/><br/>
+
+        <h3 class="title is-4 has-text-left">Comparison with Fine-Tuned Proposals</h3>
+        <h5 class="title is-5 has-text-left">Compatibility with Fine-Tuned Proposals</h5>
+        <div class="content has-text-justified">
+          <p>
+            Because CDM is proposal-agnostic, it can be paired with reward-aware fine-tuned proposals
+            such as <b>DRAKES</b> (reward backpropagation) or <b>d1</b> (GRPO-style RL fine-tuning).
+            Notably, the twist function can be trained independently of the proposal fine-tuning, 
+            allowing a single learned twist head to be reused across different models for synergistic performance gains. 
+          </p>
+        </div>
+        <div class="columns is-vcentered is-centered">
+          <div class="column is-narrow has-text-centered">
+            <img src="./static/images/figure_ft.jpg"
+                 alt="CDM + d1 (GRPO) synergy on toxic text and DNA design"
+                 style="height: 320px; width: auto; max-width: 100%;"/>
+            <p class="is-size-6" style="margin-top: 0.5em;">
+              d1 + CDM on toxic text generation (left) and regulatory DNA design (right).
+            </p>
+          </div>
+          <div class="column is-narrow has-text-centered">
+            <img src="./static/images/figure_tox_drakes.jpg"
+                 alt="CDM + DRAKES synergy on toxic text"
+                 style="height: 320px; width: auto; max-width: 100%;"/>
+            <p class="is-size-6" style="margin-top: 0.5em;">
+              DRAKES + CDM on toxic text generation.
+            </p>
+          </div>
+        </div>
+
+        <h5 class="title is-5 has-text-left">Mode Collapse of  Fine-Tuned Proposals</h5>
+
+        <div class="content has-text-justified">
+          <p>
+            Beyond reward, we evaluate <b>diversity</b>: Self-BLEU, perplexity for toxic
+            text generation and cluster count, intra-cluster TM-score for protein designability. 
+            Reward fine-tuning baselines (d1, DRAKES) often trade diversity for reward, 
+            whereas CDM achieves higher reward <i>and</i> better diversity simultaneously.
+          </p>
+        </div>
+
+        <style>
+          .div-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+          .div-table th, .div-table td { padding: 0.45em 0.7em; text-align: center; border-bottom: 1px solid #e0e0e0; }
+          .div-table thead th { border-bottom: 2px solid #444; }
+          .div-table tr.ours { background: #fdecec; font-weight: 700; }
+          .div-table caption { font-weight: 700; padding: 0.4em 0; }
+        </style>
+
+        <div class="columns is-centered is-vcentered">
+          <div class="column is-half">
+            <table class="div-table">
+              <caption>Toxic Text Generation</caption>
+              <thead>
+                <tr>
+                  <th></th>
+                  <th>Reward &uarr;</th>
+                  <th>Self-BLEU &darr;</th>
+                  <th>PPL &darr;</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>d1</td><td>&minus;0.933</td><td>0.051</td><td>332.322</td></tr>
+                <tr><td>DRAKES</td><td>&minus;1.051</td><td>0.027</td><td>322.424</td></tr>
+                <tr class="ours"><td>CDM (Ours)</td><td>&minus;0.845</td><td>0.015</td><td>124.500</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="column is-half">
+            <table class="div-table">
+              <caption>Protein Designability</caption>
+              <thead>
+                <tr>
+                  <th></th>
+                  <th>Reward &uarr;</th>
+                  <th>Clusters &uarr;</th>
+                  <th>Inner TM &darr;</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>d1</td><td>&minus;1.876</td><td>14</td><td>0.851</td></tr>
+                <tr class="ours"><td>CDM (Ours)</td><td>&minus;1.723</td><td>17</td><td>0.499</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <br/><br/>
+
+        <h3 class="title is-4 has-text-left">Twist Training Comparison</h3>
+        <div class="content has-text-justified">
+          <p>
+            Compared to regression-based objectives (Soft Value) [4] that learn the twist from base-model samples, 
+            CDM, which leverages both positive and negative samples, 
+            converges faster and reaches higher reward levels under a matched training budget on both toxic text generation and DNA enhancer design. 
+          </p>
+        </div>
+        <div class="columns is-centered is-vcentered" style="gap: 0;">
+          <div class="column has-text-right" style="padding-right: 0.25rem;">
+            <img src="./static/images/figure_training_tox.jpg" alt="Toxicity training curves"
+                 style="max-width: 80%;"/>
+            <p class="has-text-centered is-size-6" style="max-width: 80%; margin-left: auto;">Toxic Text Generation</p>
+          </div>
+          <div class="column has-text-left" style="padding-left: 0.25rem;">
+            <img src="./static/images/figure_training_dna.jpg" alt="DNA training curves"
+                 style="max-width: 80%;"/>
+            <p class="has-text-centered is-size-6" style="max-width: 80%; margin-right: auto;">Regulatory DNA Design</p>
+          </div>
+        </div>
+
+        <p class="is-size-6 has-text-centered" style="margin-top: 0.5em; width: 80%; margin-left: auto; margin-right: auto;">
+          CDM exhibits superior training convergence, consistently outperforming regression-based Soft Value objective across various Monte Carlo sample sizes $M$.
+        </p>
+
+        <br/>
+
+        <h3 class="title is-4 has-text-left">Qualitative Results</h3>
+
+        <h5 class="title is-5 has-text-left">Protein Designability</h5>
+
+        <div class="content has-text-justified">
+          <p>
+            proteins sampled with CDM exhibit highly designable characteristics, 
+            demonstrating a close match between the generated target structure and its refolded counterpart. 
+          </p>
+        </div>
+        <table class="protein-qual-table" style="width: 100%; border-collapse: collapse;">
+          <tbody>
+            <tr>
+              <td style="width: 12%; vertical-align: middle; text-align: right; padding-right: 1em; font-weight: 600;">Base</td>
+              <td style="vertical-align: middle;">
+                <img src="./static/images/protein_qual_base.png" alt="Base proteins" style="width: 100%; display: block;"/>
+              </td>
+            </tr>
+            <tr>
+              <td style="vertical-align: middle; text-align: right; padding-right: 1em; font-weight: 600;">BoN</td>
+              <td style="vertical-align: middle;">
+                <img src="./static/images/protein_qual_bon.png" alt="BoN proteins" style="width: 100%; display: block;"/>
+              </td>
+            </tr>
+            <tr>
+              <td style="vertical-align: middle; text-align: right; padding-right: 1em; font-weight: 600;">SMC</td>
+              <td style="vertical-align: middle;">
+                <img src="./static/images/protein_qual_smc_m1.png" alt="SMC (M=1) proteins" style="width: 100%; display: block;"/>
+              </td>
+            </tr>
+            <!-- <tr>
+              <td style="vertical-align: middle; text-align: right; padding-right: 1em; font-weight: 600;">SMC (M=4)</td>
+              <td style="vertical-align: middle;">
+                <img src="./static/images/protein_qual_smc_m4.png" alt="SMC (M=4) proteins" style="width: 100%; display: block;"/>
+              </td>
+            </tr> -->
+            <tr>
+              <td style="vertical-align: middle; text-align: right; padding-right: 1em; font-weight: 600;">Soft Value</td>
+              <td style="vertical-align: middle;">
+                <img src="./static/images/protein_qual_svdd.png" alt="SVDD proteins" style="width: 100%; display: block;"/>
+              </td>
+            </tr>
+            <tr>
+              <td style="vertical-align: middle; text-align: right; padding-right: 1em; font-weight: 700; color: #b00020;">CDM (Ours)</td>
+              <td style="vertical-align: middle;">
+                <img src="./static/images/protein_qual_ctl.png" alt="CDM proteins" style="width: 100%; display: block;"/>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <br/>
+
+        <h5 class="title is-5 has-text-left">Diffusion Large Language Model Alignment</h5>
+        <div class="content has-text-justified">
+          <p>
+            CDM successfully steers the model to produce helpful, accurate, and aligned text across diverse domains. 
+          </p>
+        </div>
+
+        <style>
+          .llada-cell {
+            background: #f7f7f9; border-radius: 6px; padding: 0.75em 0.9em;
+            font-size: 0.78rem; line-height: 1.45; text-align: left;
+            white-space: pre-wrap; max-height: 360px; overflow-y: auto;
+            height: 100%;
+          }
+          .llada-cell--query { background: #ececf2; font-style: italic; }
+          .llada-cell--ours  { background: #fdecec; border: 1px solid #e6a6a6; }
+          .llada-header { font-weight: 700; text-align: center; padding-bottom: 0.4em; }
+          .llada-row { margin-bottom: 1.25em !important; }
+        </style>
+
+        <div class="columns is-mobile llada-row" style="margin-bottom: 0.25em !important;">
+          <div class="column is-3 llada-header">Query</div>
+          <div class="column is-3 llada-header">SMC</div>
+          <div class="column is-3 llada-header">Soft Value</div>
+          <div class="column is-3 llada-header"><span style="color: #b00020;">CDM (Ours)</span></div>
+        </div>
+
+        <!-- Example 1: meeting cancellation email -->
+
+        <div class="columns is-mobile llada-row">
+          <div class="column is-3">
+            <div class="llada-cell llada-cell--query">Write a friendly e-mail saying, that I won't be able to join todays meeting. Make up a very understandable reason, that's serious enough but won't lead to awkward questions from my coworkers tomorrow.</div>
+          </div>
+          <div class="column is-3">
+            <div class="llada-cell">Hello [coworker],
+
+I hope this not napping you but I will have to be unable to join today's meeting. Recently I have been having a difficult time with coughing due to a known chronic rh life 说她 that I have had been struggling for for 10/15 years now strums and job 见他 didn't you have a professional where vet advised me against unnecessary meetings as soon as possible.
+
+I understand for what is very necessary for business I have deferred my meeting and will have all related documents taking care of for discuss asap.
+
+Kindest of regards,
+[Your Name]</div>
+          </div>
+          <div class="column is-3">
+            <div class="llada-cell">Subject: Not Analytics Today
+
+Dear [Colleagues's Names],
+
+I hope this message is finding you well. Unfortunately, I will not be able to take part in today's meeting due to some health issues. I am missing critical sales data for 先股权投资 and will complete and submit it next week. I will be able to present internal_with_ids data and will provide the sales update tomorrow — until 先股权投资's data arrives before decisions are implemented looking forward.
+
+Let's make it simple and wait for the sales update tomorrow. Thank you for your understanding.
+
+Best regards,
+[Your Name]</div>
+          </div>
+          <div class="column is-3">
+            <div class="llada-cell llada-cell--ours">Hi [Coworker's Name],
+
+I hope this email finds you well. I wanted to kindly inform you that I won't be able to join today's meeting. Unfortunately, earlier this afternoon, I came across some important personal matters that need to be attended to immediately. I hope to have them addressed as soon as possible.
+
+If you have any specific details or concerns regarding today's meeting, please let me know. I'll update you all once I am available.
+
+Thank you for your understanding, and I look forward to our ongoing discussions.
+
+Best regards,
+[Your Full Name]</div>
+          </div>
+        </div>
+
+        <!-- Example 2: quadratic inequality / interval notation -->
+        <div class="columns is-mobile llada-row">
+          <div class="column is-3">
+            <div class="llada-cell llada-cell--query">For what values of \(x\) is it true that \(x^2 - 5x - 4 \le 10\)? Express your answer in interval notation.</div>
+          </div>
+          <div class="column is-3">
+            <div class="llada-cell">The given inequality becomes \(x^2 - 5x - 4 - 10 \le 0,\) or \(x^2 - 5x - 14 \le 0.\)
+
+We know that \(x=14\) or \(x=-7\), so \((x+1)(x-7)\) is a factor.
+
+We quotient to find 不同意 infants \((x+2)(4x+7)\). Thus, our answer is
+\(x \in \boxed{-\tfrac{7}{2} \cup (-7, -2) \cup (-2, 7]}.\)</div>
+          </div>
+          <div class="column is-3">
+            <div class="llada-cell">Subtracting \(10\) from both sides gives
+\(x^2 - 5x - 4 \le 0.\)
+
+Factoring this inequality gives
+\((x + 2)(x - 7) \le 0.\)
+
+Therefore, this is true when \(x\) is to the left of \(x = -2\) or right of \(x = 7.\) In interval notation, this is
+\(\boxed{(-\infty,\, -2] \cup [7,\, \infty)}.\)</div>
+          </div>
+          <div class="column is-3">
+            <div class="llada-cell llada-cell--ours">We rewrite the inequality \(x^2 - 5x - 4 - 10 \le 0\) as \(x^2 - 5x - 14 \le 0.\) This is equivalent to \((x - 7)(x + 2) \le 0,\) which holds for \(x \in \boxed{[-2,\,7]}.\)</div>
+          </div>
+        </div>
+
+        <!-- Example 3: word-play joke ("rain") -->
+        <div class="columns is-mobile llada-row">
+          <div class="column is-3">
+            <div class="llada-cell llada-cell--query">Tell me a joke that involves a word-play with the word "rain".</div>
+          </div>
+          <div class="column is-3">
+            <div class="llada-cell">Here's a word-play using the word "rain":
+
+Why did the rain go to "invite"? Because it was a little wet.
+
+This joke uses play on the words, the quiet about the rain can make it cramp or wet, and the idea of "inviting" the situation to the rain where it's making things wet or slippery, just like one gets invited to having to be in a wet location. The word "INVite" happens to be a title, which adds to the topical humor.</div>
+          </div>
+          <div class="column is-3">
+            <div class="llada-cell">Why did the umbrella quit its job?
+
+Because it needed some pick-me-up!</div>
+          </div>
+          <div class="column is-3">
+            <div class="llada-cell llada-cell--ours">Why did the rain go to the doctor?
+
+Because it was feeling drained!</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<section class="section" id="contributions">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3">Contributions</h2>
+        <div class="content has-text-left">
+          <ul>
+            <li>We propose <b>Contrastive Distribution Matching (CDM)</b>, an SMC-amortization
+            framework for discrete diffusion that reduces inference-time twist evaluation to a
+            constant-time operation.</li>
+            <li>We design a <b>diffusion-native training scheme</b> that leverages the closed-form
+            forward process and a positive buffer, decoupling reward-evaluation cost from the number
+            of gradient updates.</li>
+            <li>We demonstrate the <b>versatility</b> of CDM across four domains &mdash; toxic text
+            generation, regulatory DNA design, protein generation, and dLLM alignment &mdash; with
+            consistent state-of-the-art scaling behavior.</li>
+            <li>We show that CDM yields <b>synergistic gains</b> when paired with fine-tuned
+            proposals, and is more effective than prior regression-based twist objectives.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+    <div class="container is-max-desktop">
+        <h2 class="title is-3 has-text-centered">Acknowledgement</h2>
+        <div class="content has-text-justified">
+            <p>
+                We thank Jason Yoo for insightful discussions on learning the value function for SMC in generative models, and Yuchen Zhu for providing new insights into the role of negative gradients. 
+            </p>
+        </div>
+    </div>
+</div>
+</section>
+
+
+<section class="section" id="references">
+  <div class="container is-max-desktop content">
+    <h2 class="title is-3">References</h2>
+    <ol style="font-size: 0.9rem; line-height: 1.45;">
+      <li id="ref-zhao2024ctl">
+        S. Zhao, R. Brekelmans, A. Makhzani, R. Grosse.
+        <i>Probabilistic Inference in Language Models via Twisted Sequential Monte Carlo.</i> 2024.
+        [<a href="https://arxiv.org/abs/2404.17546" target="_blank" rel="noopener">arXiv</a>]
+      </li>
+      <li id="ref-wang2024drakes">
+        C. Wang, M. Uehara, Y. He, A. Wang, T. Biancalani, A. Lal, T. Jaakkola, S. Levine, H. Wang, A. Regev.
+        <i>Fine-tuning Discrete Diffusion Models via Reward Optimization with Applications to DNA and Protein Design (DRAKES).</i> 2024.
+        [<a href="https://arxiv.org/abs/2410.13643" target="_blank" rel="noopener">arXiv</a>]
+      </li>
+      <li id="ref-zhao2025d1">
+        S. Zhao, D. Gupta, Q. Zheng, A. Grover.
+        <i>d1: Scaling Reasoning in Diffusion Large Language Models via Reinforcement Learning.</i> 2025.
+        [<a href="https://arxiv.org/abs/2504.12216" target="_blank" rel="noopener">arXiv</a>]
+      </li>
+      <li id="ref-li2024svdd">
+        X. Li, Y. Zhao, C. Wang, G. Scalia, G. Eraslan, S. Nair, T. Biancalani, A. Regev, S. Levine, M. Uehara.
+        <i>Derivative-Free Guidance in Continuous and Discrete Diffusion Models with Soft Value-Based Decoding.</i> 2025.
+        [<a href="https://arxiv.org/abs/2408.08252" target="_blank" rel="noopener">arXiv</a>]
+      </li>
+    </ol>
+  </div>
+</section>
+
+
+<section class="section" id="BibTeX">
+  <div class="container is-max-desktop content">
+    <h2 class="title">BibTeX</h2>
+    <pre><code>@article{cdm2026,
+  title     = {Contrastive Distribution Matching for Amortized Sequential Monte Carlo in Discrete Diffusion},
+  author    = {Kim, Jaihoon and Yoon, Taehoon and Phunyaphibarn, Prin and Kim, Seungjun and Mardani, Morteza and Sung, Minhyuk},
+  journal   = {arXiv preprint},
+  year      = {2026}
+}</code></pre>
+  </div>
+</section>
+
+
+<footer class="footer">
+  <div class="container">
+    <div class="content has-text-centered">
+      <a class="icon-link" href="#" title="Paper">
+        <i class="fas fa-file-pdf"></i>
+      </a>
+      <a class="icon-link" href="#" class="external-link" title="Code">
+        <i class="fab fa-github"></i>
+      </a>
+    </div>
+    <div class="columns is-centered">
+      <div class="column is-8">
+        <div class="content">
+          <p>
+            Website template borrowed from
+            <a href="https://github.com/nerfies/nerfies.github.io">Nerfies</a>, licensed under a
+            <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/">Creative Commons
+            Attribution-ShareAlike 4.0 International License</a>.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
