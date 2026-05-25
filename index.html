@@ -112,7 +112,7 @@
                 </a>
               </span>
               <span class="link-block">
-                <a href="#"
+                <a href="http://arxiv.org/abs/2605.23346"
                    class="external-link button is-normal is-rounded is-dark">
                   <span class="icon">
                       <i class="ai ai-arxiv"></i>
@@ -126,7 +126,7 @@
                   <span class="icon">
                       <i class="fab fa-github"></i>
                   </span>
-                  <span>Code (Coming Soon)</span>
+                  <span>Code</span>
                 </a>
               </span>
               <span class="link-block">
@@ -709,34 +709,75 @@ Because it was feeling drained!</div>
 <section class="section" id="BibTeX">
   <div class="container is-max-desktop content">
     <h2 class="title">BibTeX</h2>
-    <pre><code>@article{cdm2026,
-  title     = {Contrastive Distribution Matching for Amortized Sequential Monte Carlo in Discrete Diffusion},
-  author    = {Kim, Jaihoon and Yoon, Taehoon and Phunyaphibarn, Prin and Kim, Seungjun and Mardani, Morteza and Sung, Minhyuk},
-  journal   = {arXiv preprint},
-  year      = {2026}
-}</code></pre>
+    <div style="position: relative;">
+      <button id="bibtex-copy-btn" class="button is-small" type="button"
+              title="Copy to clipboard"
+              style="position: absolute; top: 0.5rem; right: 0.5rem; z-index: 1; transition: transform 0.15s ease, background-color 0.2s ease, color 0.2s ease;"
+              onclick="copyBibtex(this)">
+        <span class="icon is-small"><i class="fas fa-copy"></i></span>
+      </button>
+      <pre><code id="bibtex-content">@article{kim2026cdm,
+  title = {Contrastive Distribution Matching for Amortized Sequential Monte Carlo in Discrete Diffusion},
+  author = {Kim, Jaihoon and Yoon, Taehoon and Phunyaphibarn, Prin and Kim, Seungjun and Mardani, Morteza and Sung, Minhyuk},
+  journal = {arXiv preprint arXiv:2605.23346},
+  year = {2026}
+}
+</code></pre>
+    </div>
   </div>
+  <script>
+    function copyBibtex(btn) {
+      const codeEl = document.getElementById('bibtex-content');
+      const text = codeEl ? codeEl.innerText : '';
+
+      // Font Awesome replaces <i> with <svg> after load — swap the whole
+      // <span class="icon"> contents so it works either way.
+      const iconSpan = btn.querySelector('.icon');
+      if (iconSpan && !btn.dataset.copying) {
+        btn.dataset.copying = '1';
+        btn.dataset.origIcon = iconSpan.innerHTML;
+        iconSpan.innerHTML = '<i class="fas fa-check"></i>';
+        btn.classList.add('is-success');
+        btn.style.transform = 'scale(1.15)';
+        setTimeout(() => { btn.style.transform = 'scale(1)'; }, 200);
+        setTimeout(() => {
+          iconSpan.innerHTML = btn.dataset.origIcon;
+          btn.classList.remove('is-success');
+          delete btn.dataset.copying;
+          delete btn.dataset.origIcon;
+        }, 1500);
+      }
+
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).catch(() => fallbackCopy(text));
+      } else {
+        fallbackCopy(text);
+      }
+    }
+
+    function fallbackCopy(text) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.left = '-9999px';
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); }
+      catch (e) { console.error('Copy failed', e); }
+      document.body.removeChild(ta);
+    }
+  </script>
 </section>
 
 
 <footer class="footer">
   <div class="container">
-    <div class="content has-text-centered">
-      <a class="icon-link" href="#" title="Paper">
-        <i class="fas fa-file-pdf"></i>
-      </a>
-      <a class="icon-link" href="#" class="external-link" title="Code">
-        <i class="fab fa-github"></i>
-      </a>
-    </div>
     <div class="columns is-centered">
       <div class="column is-8">
-        <div class="content">
+        <div class="content has-text-centered">
           <p>
             Website template borrowed from
-            <a href="https://github.com/nerfies/nerfies.github.io">Nerfies</a>, licensed under a
-            <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/">Creative Commons
-            Attribution-ShareAlike 4.0 International License</a>.
+            <a href="https://github.com/nerfies/nerfies.github.io">Nerfies</a>.
           </p>
         </div>
       </div>
