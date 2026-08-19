@@ -99,6 +99,24 @@ body {
     border-radius: 10px !important;
 }
 
+/* Demo video below the Paper / arXiv / Code / BibTeX links.
+   Colors sampled from the video itself: #fcf5eb is the panel background,
+   with a slightly deeper tone of the same hue for the border. */
+.demo-video {
+    margin: 2rem auto 0;
+    max-width: 960px;
+    padding: 0.4rem;
+    background: #fcf5eb;
+    border: 2px solid #f0ddc0;
+    border-radius: 10px;
+}
+
+.demo-video video {
+    display: block;
+    width: 100%;
+    border-radius: 6px;
+}
+
 .publication-video iframe {
     position: absolute;
     top: 0;
